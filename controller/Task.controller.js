@@ -79,7 +79,26 @@ taskController.putTask = async (req, res) => {
 taskController.delTask = async (req, res) => {
     try {
         const { id } = req.params; // URL에서 Task ID 가져오기
+        const { userId } = req.body; // 요청 본문에서 userId 받기
 
+        console.log("삭제 버튼로그", req.body);
+        console.log("삭제 버튼로그2", userId);
+        // 해당 task의 작성자 정보 가져오기
+        const [task] = await connection.promise().query(
+            "SELECT userId FROM tasks WHERE id = ?",
+            [id]
+        );
+
+        // 작업이 존재하지 않거나 userId가 일치하지 않으면 에러
+        if (task.length === 0) {
+            return res.status(404).json({ status: 'fail', message: 'Task not found' });
+        }
+
+        if (task[0].userId !== userId) {
+            return res.status(403).json({ status: 'fail', message: '다른 사람의 글은 삭제할 수 없습니다.' });
+        }
+
+        // 삭제 쿼리 실행
         const [result] = await connection.promise().query(
             "DELETE FROM tasks WHERE id = ?",
             [id]
@@ -94,5 +113,4 @@ taskController.delTask = async (req, res) => {
         res.status(400).json({ status: 'fail', error: err.message });
     }
 };
-
 module.exports = taskController;
