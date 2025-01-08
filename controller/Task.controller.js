@@ -5,22 +5,27 @@ const taskController = {};
 taskController.createTask = async (req, res) => {
     try {
         const { task, isComplete, userId, userName } = req.body; // userId와 userName을 받아옵니다.
-        
+        console.log("추가버튼 내용 확인", req.body);
+
+        // 비회원일 경우 userId와 userName을 'none'과 '비회원'으로 설정
+        const finalUserId = userId === 'none' ? 'none' : userId;
+        const finalUserName = userName === '비회원' ? '비회원' : userName;
+
         // isComplete 값이 없으면 기본값 false로 설정
         const taskComplete = isComplete !== undefined ? isComplete : false;
 
         // MySQL 쿼리로 Task 생성
         const [result] = await connection.promise().query(
             "INSERT INTO tasks (task, isComplete, userId, userName) VALUES (?, ?, ?, ?)", // userId와 userName 추가
-            [task, taskComplete, userId, userName]
+            [task, taskComplete, finalUserId, finalUserName]
         );
 
         const newTask = {
             id: result.insertId,
             task: task,
             isComplete: taskComplete,
-            userId: userId,
-            userName: userName
+            userId: finalUserId,
+            userName: finalUserName
         };
 
         res.status(200).json({
@@ -28,6 +33,7 @@ taskController.createTask = async (req, res) => {
             data: newTask
         });
     } catch (err) {
+        console.error("서버 오류:", err.message);
         res.status(400).json({ status: 'fail', error: err.message });
     }
 };
