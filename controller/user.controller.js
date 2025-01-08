@@ -61,7 +61,7 @@ userController.getUser = async (req, res) => {
 userController.generateToken = (user) => {
     const payload = {
         userId: user.userId,  // 필요한 데이터 추가
-        userName: user.userName // 예시: 사용자 이름 추가
+        userName: user.userName, // 예시: 사용자 이름 추가
     };
     const secretKey = process.env.JWT_SECRET_KEY ; // 환경 변수로 비밀 키 설정
 
