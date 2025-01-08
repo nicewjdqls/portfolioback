@@ -101,7 +101,7 @@ taskController.delTask = async (req, res) => {
         }
 
         if (task[0].userId !== userId) {
-            return res.status(403).json({ status: 'fail', message: '다른 사람의 글은 삭제할 수 없습니다.' });
+            return res.status(403).json({ status: 'fail', message: '직접 작성한 글만 삭제가능합니다.' });
         }
 
         // 삭제 쿼리 실행
