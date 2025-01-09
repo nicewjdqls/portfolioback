@@ -41,7 +41,7 @@ taskController.createTask = async (req, res) => {
 // Task 조회 (GET /tasks)
 taskController.getTask = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query; // page와 limit을 쿼리 파라미터로 받음
+        const { page = 1, limit = 6 } = req.query; // page와 limit을 쿼리 파라미터로 받음
         const offset = (page - 1) * limit; // 시작 인덱스 계산
 
         const query = `
