@@ -46,10 +46,10 @@ taskController.getTask = async (req, res) => {
 
         const query = `
             SELECT id, task, isComplete, createdAt, userId, userName 
-            FROM tasks 
+            FROM tasks
             LIMIT ? OFFSET ?
         `;
-        
+
         const [rows] = await connection.promise().query(query, [parseInt(limit), parseInt(offset)]);
 
         const [totalRows] = await connection.promise().query('SELECT COUNT(*) AS total FROM tasks'); // 총 데이터 수
@@ -117,7 +117,7 @@ taskController.delTask = async (req, res) => {
         }
 
         if (task[0].userId !== userId) {
-            return res.status(403).json({ status: 'fail', message: '직접 작성한 글만 삭제가능합니다.' });
+            return res.status(403).json({ status: 'fail', message: '직접 작성한 글만 삭제 가능합니다.' });
         }
 
         // 삭제 쿼리 실행
@@ -135,4 +135,5 @@ taskController.delTask = async (req, res) => {
         res.status(400).json({ status: 'fail', error: err.message });
     }
 };
+
 module.exports = taskController;
