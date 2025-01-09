@@ -41,15 +41,31 @@ taskController.createTask = async (req, res) => {
 // Task 조회 (GET /tasks)
 taskController.getTask = async (req, res) => {
     try {
-        const query = `SELECT id, task, isComplete, createdAt, userId, userName FROM tasks`;
+        const { page = 1, limit = 10 } = req.query; // page와 limit을 쿼리 파라미터로 받음
+        const offset = (page - 1) * limit; // 시작 인덱스 계산
 
-        const [rows] = await connection.promise().query(query);
+        const query = `
+            SELECT id, task, isComplete, createdAt, userId, userName 
+            FROM tasks 
+            LIMIT ? OFFSET ?
+        `;
+        
+        const [rows] = await connection.promise().query(query, [parseInt(limit), parseInt(offset)]);
+
+        const [totalRows] = await connection.promise().query('SELECT COUNT(*) AS total FROM tasks'); // 총 데이터 수
+
+        const totalPages = Math.ceil(totalRows[0].total / limit); // 총 페이지 수 계산
 
         if (rows.length === 0) {
             return res.status(404).json({ status: 'fail', message: 'No tasks found' });
         }
 
-        res.status(200).json({ status: 'ok', data: rows });
+        res.status(200).json({
+            status: 'ok',
+            data: rows,
+            totalPages,  // 추가: 총 페이지 수 포함
+            currentPage: parseInt(page),  // 현재 페이지 정보
+        });
     } catch (err) {
         res.status(400).json({ status: 'fail', error: err.message });
     }
