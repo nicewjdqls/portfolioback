@@ -8,7 +8,8 @@ const { connection } = require('./model/Task'); // MySQL 연결 설정
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));  // 50MB로 설정 (기본값은 1MB)
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use("/api", indexRouter); // /api로 시작하는 라우트 처리
 
 // MySQL 연결
