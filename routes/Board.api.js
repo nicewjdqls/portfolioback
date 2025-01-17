@@ -16,6 +16,6 @@ router.get('/post/:id', boardController.getPostById);  // 수정된 경로
 router.put('/edit/:id', authController.authenticate, boardController.updatePost);
 
 // 게시글 삭제
-router.delete('/:id', authController.authenticate, boardController.deletePost);
+router.delete('/:id', boardController.deletePost);
 
 module.exports = router;
