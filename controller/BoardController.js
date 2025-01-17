@@ -106,7 +106,7 @@ const deletePost = (req, res) => {
         const userId = decodedToken.userId; // 토큰에서 사용자 ID 가져오기
 
         // 게시글의 작성자 확인
-        const query = 'SELECT userId FROM posts WHERE id = ?';
+        const query = 'SELECT author FROM posts WHERE id = ?';
         connection.query(query, [id], (err, result) => {
             if (err) {
                 console.error('게시글 조회 실패:', err);
@@ -118,7 +118,7 @@ const deletePost = (req, res) => {
             }
 
             // 작성자가 일치하는지 확인
-            if (result[0].userId !== userId) {
+            if (result[0].author !== userId) {
                 return res.status(403).json({ message: '본인만 게시글을 삭제할 수 있습니다.' });
             }
 
