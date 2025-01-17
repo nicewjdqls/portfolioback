@@ -3,15 +3,40 @@ const jwt = require('jsonwebtoken');
 
 // 모든 게시글 조회
 const getAllPosts = (req, res) => {
-    const query = 'SELECT * FROM posts ORDER BY created_at DESC';  // 게시글 최신순 정렬
-    connection.query(query, (err, results) => {
+    const { page = 1, limit = 10 } = req.query; // page와 limit을 쿼리 파라미터로 받음
+    const offset = (page - 1) * limit; // 시작 인덱스 계산
+
+    const query = `
+        SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?
+    `;
+    const countQuery = `SELECT COUNT(*) AS total FROM posts`;
+
+    connection.query(countQuery, (err, countResult) => {
         if (err) {
-            console.error('게시글 조회 실패:', err);
-            return res.status(500).json({ message: '게시글 조회에 실패했습니다.' });
+            console.error('총 게시글 수 조회 실패:', err);
+            return res.status(500).json({ message: '게시글 수 조회 실패' });
         }
-        res.status(200).json(results);  // 결과 반환
+
+        const totalPosts = countResult[0].total;
+        const totalPages = Math.ceil(totalPosts / limit);
+
+        connection.query(query, [parseInt(limit), parseInt(offset)], (err, results) => {
+            if (err) {
+                console.error('게시글 조회 실패:', err);
+                return res.status(500).json({ message: '게시글 조회 실패' });
+            }
+
+            res.status(200).json({
+                posts: results,
+                totalPages, // 총 페이지 수 반환
+                currentPage: parseInt(page), // 현재 페이지 반환
+            });
+        });
     });
 };
+
+
+
 
 // 특정 게시글 조회
 const getPostById = (req, res) => {
@@ -45,9 +70,9 @@ const getPostById = (req, res) => {
         });
     });
 };
-// 게시글 작성
 const createPost = (req, res) => {
-    const { title, content } = req.body;
+    const { title, content, userName } = req.body; // userName을 req.body에서 가져옵니다.
+    console.log("들어오는 데이터 : ", req.body);
 
     // 요청에서 사용자 ID 가져오기
     const author = req.userId;
@@ -55,9 +80,11 @@ const createPost = (req, res) => {
     if (!author) {
         return res.status(401).json({ message: '로그인 후 게시글을 작성할 수 있습니다.' });
     }
+    console.log("SQL 쿼리 데이터:", [title, content, author, userName]);
 
-    const query = 'INSERT INTO posts (title, content, author, views, created_at) VALUES (?, ?, ?, 0, NOW())';
-    connection.query(query, [title, content, author], (err, result) => {
+    const query = 'INSERT INTO posts (title, content, author, userName, views, created_at ) VALUES (?, ?, ?, ?, 0, NOW())';
+
+    connection.query(query, [title, content, author, userName], (err, result) => {
         if (err) {
             console.error('게시글 작성 실패:', err);
             return res.status(500).json({ message: '게시글 작성에 실패했습니다.' });
@@ -76,7 +103,7 @@ const updatePost = (req, res) => {
     connection.query(query, [title, content, id], (err, result) => {
       if (err) {
         console.error('게시글 수정 실패:', err);
-        return res.status(500).json({ message: '게시글 수정에 실패했습니다.' });
+        return res.status(500).json({ message: '게시글 수정에 실패했습니다22.' });
       }
   
       // 수정된 데이터가 없으면 404 처리
